@@ -23,7 +23,7 @@ npm install -g artillery-engine-lambda
 2. Specify additional options in `config.lambda`:
     - `region` - AWS region (**default**: `us-east-1`)
 3. Set the `engine` property of the scenario to `lambda`.
-4. Use `invoke` in your scenario to push data to the stream.
+4. Use `invoke` in your scenario to invoke the Lambda function
 5. Specify additional invocation parameters:
     - `payload` - String or object with the payload to send to the Lambda function
     - `invocationType` - Lambda invocation type. One of `Event`, `RequestResponse`, `DryRun`

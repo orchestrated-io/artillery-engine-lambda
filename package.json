@@ -12,6 +12,10 @@
     "lambda",
     "load"
   ],
+  "repository" : { 
+    "type" : "git",
+    "url" : "https://github.com/orchestrated-io/artillery-engine-lambda"
+  },
   "author": "Orchestrated Systems",
   "license": "MPL-2.0",
   "devDependencies": {
