@@ -38,7 +38,6 @@ config:
   target: "lambda_function_name"
   lambda:
     region: "us-east-1"
-  # Emulate 10 publishers
   phases:
     arrivalCount: 10
     duration: 1

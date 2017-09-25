@@ -62,12 +62,12 @@ LambdaEngine.prototype.step = function step (rs, ee) {
             : String(rs.invoke.payload);
 
       var params = {
-           ClientContext: rs.invoke.clientContext || "", //base64 encode
+           ClientContext: Buffer.from(rs.invoke.clientContext || "").toString("base64"),
            FunctionName: self.script.config.target, 
            InvocationType: rs.invoke.invocationType || "Event", 
            LogType: rs.invoke.logType || "Tail", 
            Payload: payload,
-           Qualifier: rs.invoke.qualifier || "1"
+           Qualifier: rs.invoke.qualifier || "$LATEST"
       };
 
       ee.emit('request');
