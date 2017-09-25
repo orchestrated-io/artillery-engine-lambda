@@ -1,6 +1,6 @@
 {
   "name": "artillery-engine-lambda",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Load test AWS Lambda with Artillery.io",
   "main": "index.js",
   "scripts": {
@@ -12,9 +12,9 @@
     "lambda",
     "load"
   ],
-  "repository" : { 
-    "type" : "git",
-    "url" : "https://github.com/orchestrated-io/artillery-engine-lambda"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/orchestrated-io/artillery-engine-lambda"
   },
   "author": "Orchestrated Systems",
   "license": "MPL-2.0",
@@ -32,6 +32,7 @@
     "tape": "^4.6.3"
   },
   "dependencies": {
+    "artillery-core": "^4.6.0",
     "async": "^1.5.2",
     "aws-sdk": "^2.45.0",
     "debug": "^2.6.6",

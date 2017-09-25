@@ -46,6 +46,7 @@ config:
 
 scenarios:
   - name: "Invoke function"
+    engine: "lambda"
     flow:
       - loop:
         - invoke:
