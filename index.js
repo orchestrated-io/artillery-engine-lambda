@@ -70,6 +70,9 @@ LambdaEngine.prototype.step = function step (rs, ee) {
            Qualifier: rs.invoke.qualifier || "$LATEST"
       };
 
+      console.log("Invoking Lambda with params:");
+      console.log(params);
+
       ee.emit('request');
       context.lambda.invoke(params, function (err, data) {
         if (err) {
