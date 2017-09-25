@@ -1,6 +1,6 @@
 {
   "name": "artillery-engine-lambda",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Load test AWS Lambda with Artillery.io",
   "main": "index.js",
   "scripts": {
