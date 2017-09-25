@@ -1,0 +1,33 @@
+# Emulate 20 publishers sending two records per second
+# for 60 seconds.
+config:
+  target: "my_awesome_function"
+  lambda:
+    region: "ap-southeast-2"
+  phases:
+    - arrivalCount: 10
+      duration: 1
+  engines:
+    lambda: {}
+
+scenarios:
+  - name: "Invoke function"
+    engine: lambda
+    flow:
+      - count: 60
+        loop:
+        - invoke:
+            # Event, RequestResponse or DryRun
+            clientContext: ""
+            invocationType: "Event"
+            # Tail or None
+            logType: "Tail"
+            payload: ""
+            qualifier: ""
+        - invoke:
+            clientContext: ""
+            invocationType: "event"
+            logType: "Tail"
+            payload: ""
+            qualifier: ""
+        - think: 1

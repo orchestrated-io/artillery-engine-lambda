@@ -1,0 +1,36 @@
+{
+  "name": "artillery-engine-lambda",
+  "version": "1.0.0",
+  "description": "Load test AWS Lambda with Artillery.io",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test/index.js",
+    "commitmsg": "conventional-changelog-lint -e",
+    "precommit": "semistandard"
+  },
+  "keywords": [
+    "lambda",
+    "load"
+  ],
+  "author": "Orchestrated Systems",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "conventional-changelog-lint": "^1.1.9",
+    "debug": "^2.6.4",
+    "eslint": "^3.19.0",
+    "eslint-config-standard": "^10.2.1",
+    "eslint-plugin-import": "^2.2.0",
+    "eslint-plugin-node": "^4.2.2",
+    "eslint-plugin-promise": "^3.5.0",
+    "eslint-plugin-standard": "^3.0.1",
+    "husky": "^0.13.3",
+    "semistandard": "^11.0.0",
+    "tape": "^4.6.3"
+  },
+  "dependencies": {
+    "async": "^1.5.2",
+    "aws-sdk": "^2.45.0",
+    "debug": "^2.6.6",
+    "lodash": "^4.17.4"
+  }
+}
