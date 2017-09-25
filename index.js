@@ -24,13 +24,25 @@ LambdaEngine.prototype.createScenario = function createScenario (scenarioSpec, e
   return this.compile(tasks, scenarioSpec.flow, ee);
 };
 
-LambdaEngine.prototype.step = function step (rs, ee) {
-  const self = this;
+LambdaEngine.prototype.step = function step (rs, ee, opts) {
+  opts = opts || {};
+  let self = this;
+  let config = this.config;
 
   if (rs.loop) {
-    const steps = rs.loop.map(loopStep => this.step(loopStep, ee));
+    let steps = _.map(rs.loop, function(rs) {
+      return self.step(rs, ee, opts);
+    });
 
-    return this.helpers.createLoopWithCount(rs.count || -1, steps);
+    return this.helpers.createLoopWithCount(
+      rs.count || -1,
+      steps,
+      {
+        loopValue: rs.loopValue || '$loopCount',
+        overValues: rs.over,
+        whileTrue: self.config.processor ?
+        self.config.processor[rs.whileTrue] : undefined
+      });
   }
 
   if (rs.log) {
@@ -54,6 +66,7 @@ LambdaEngine.prototype.step = function step (rs, ee) {
         return callback(null, context);
       });
     };
+
   }
 
   if (rs.invoke) {
