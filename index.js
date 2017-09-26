@@ -14,6 +14,7 @@ function LambdaEngine (script, ee) {
   this.script = script;
   this.ee = ee;
   this.helpers = helpers;
+  this.config = script.config;
 
   return this;
 }
