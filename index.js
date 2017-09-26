@@ -77,7 +77,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
             : String(rs.invoke.payload);
 
       var params = {
-           ClientContext: Buffer.from(rs.invoke.clientContext || "").toString("base64"),
+           ClientContext: new Buffer(rs.invoke.clientContext || "").toString("base64"),
            FunctionName: self.script.config.target, 
            InvocationType: rs.invoke.invocationType || "Event", 
            LogType: rs.invoke.logType || "Tail", 
