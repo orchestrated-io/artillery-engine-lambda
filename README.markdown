@@ -30,6 +30,7 @@ npm install -g artillery-engine-lambda
     - `logType` - One of `None`, `Tail`
     - `qualifier` - Lambda qualifier
     - `clientContext` - client context to pass to the Lambda function as context
+    - `target` - invocation specific target overriding global default in `config.target`.
 
 #### Example Script
 
