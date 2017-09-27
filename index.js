@@ -77,7 +77,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
             : String(rs.invoke.payload);
 
       var params = {
-           ClientContext: new Buffer(rs.invoke.clientContext || "").toString("base64"),
+           ClientContext: new Buffer(rs.invoke.clientContext || "{}").toString("base64"),
            FunctionName: self.script.config.target, 
            InvocationType: rs.invoke.invocationType || "Event", 
            LogType: rs.invoke.logType || "Tail", 
@@ -85,10 +85,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
            Qualifier: rs.invoke.qualifier || "$LATEST"
       };
 
-      console.log("Invoking Lambda with params:");
-      console.log(params);
-
       ee.emit('request');
+      const startedAt = process.hrtime();
       context.lambda.invoke(params, function (err, data) {
         if (err) {
           debug(err);
@@ -96,7 +94,10 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
           return callback(err, context);
         }
 
-        ee.emit('response', 0, 0, context._uid); // FIXME
+        let code = data.StatusCode || 0;
+        const endedAt = process.hrtime(startedAt);
+        let delta = (endedAt[0] * 1e9) + endedAt[1];
+        ee.emit('response', delta, code, context._uid);
         debug(data);
         return callback(null, context);
       });

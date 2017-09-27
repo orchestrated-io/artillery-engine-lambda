@@ -52,7 +52,7 @@ scenarios:
         - invoke:
            # data may be a string or an object. Objects
            # will be JSON.stringified.
-           clientContext: "MyApp"
+           clientContext: '{"app": "MyApp"}'
            invocationType: "Event"
            logType: "Tail"
            payload: "Some payload"
