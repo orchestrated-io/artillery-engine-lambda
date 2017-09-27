@@ -24,6 +24,12 @@ const script = {
         invoke: {
           payload: 'A very boring payload'
         }
+      },
+      {
+        invoke: {
+          target: 'my_other_function',
+          payload: 'A somewhat boring payload'
+        }
       }
     ]
   }]

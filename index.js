@@ -28,10 +28,9 @@ LambdaEngine.prototype.createScenario = function createScenario (scenarioSpec, e
 LambdaEngine.prototype.step = function step (rs, ee, opts) {
   opts = opts || {};
   let self = this;
-  let config = this.config;
 
   if (rs.loop) {
-    let steps = _.map(rs.loop, function(rs) {
+    let steps = _.map(rs.loop, function (rs) {
       return self.step(rs, ee, opts);
     });
 
@@ -41,8 +40,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
       {
         loopValue: rs.loopValue || '$loopCount',
         overValues: rs.over,
-        whileTrue: self.config.processor ?
-        self.config.processor[rs.whileTrue] : undefined
+        whileTrue: self.config.processor
+          ? self.config.processor[rs.whileTrue] : undefined
       });
   }
 
@@ -67,7 +66,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         return callback(null, context);
       });
     };
-
   }
 
   if (rs.invoke) {
@@ -77,12 +75,12 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
             : String(rs.invoke.payload);
 
       var params = {
-           ClientContext: new Buffer(rs.invoke.clientContext || "{}").toString("base64"),
-           FunctionName: self.script.config.target, 
-           InvocationType: rs.invoke.invocationType || "Event", 
-           LogType: rs.invoke.logType || "Tail", 
-           Payload: payload,
-           Qualifier: rs.invoke.qualifier || "$LATEST"
+        ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
+        FunctionName: rs.invoke.target || self.script.config.target,
+        InvocationType: rs.invoke.invocationType || 'Event',
+        LogType: rs.invoke.logType || 'Tail',
+        Payload: payload,
+        Qualifier: rs.invoke.qualifier || '$LATEST'
       };
 
       ee.emit('request');
