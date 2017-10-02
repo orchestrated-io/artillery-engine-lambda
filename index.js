@@ -79,7 +79,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         FunctionName: rs.invoke.target || self.script.config.target,
         InvocationType: rs.invoke.invocationType || 'Event',
         LogType: rs.invoke.logType || 'Tail',
-        Payload: payload,
+        Payload: helpers.template(payload, context),
         Qualifier: rs.invoke.qualifier || '$LATEST'
       };
 
