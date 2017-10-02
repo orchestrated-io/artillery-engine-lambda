@@ -32,6 +32,11 @@ npm install -g artillery-engine-lambda
     - `clientContext` - client context to pass to the Lambda function as context
     - `target` - invocation specific target overriding global default in `config.target`.
 
+#### Payload substitution
+The Lambda payload can include variable and function placeholders in the form of `{{ [VAR_NAME_OR_FUNC_CALL] }}`.
+
+For example the payload might include a call to the built-in Artillery functions `$randomNumber(min max)` or `$randomString(length)`.
+
 #### Example Script
 
 ```yaml
