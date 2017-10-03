@@ -70,8 +70,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
 
   if (rs.invoke) {
     return function invoke (context, callback) {
-      context.funcs.$increment = this.$increment;
-      context.funcs.$decrement = this.$decrement;
+      context.funcs.$increment = self.$increment;
+      context.funcs.$decrement = self.$decrement;
 
       const payload = typeof rs.invoke.payload === 'object'
             ? JSON.stringify(rs.invoke.payload)
