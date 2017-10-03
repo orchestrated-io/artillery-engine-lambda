@@ -30,6 +30,16 @@ const script = {
           target: 'my_other_function',
           payload: 'A somewhat boring payload'
         }
+      },
+      {
+        invoke: {
+          payload: 'A payload with incrementing function: {{$increment(3)}}'
+        }
+      },
+      {
+        invoke: {
+          payload: 'A payload with decrementing function: {{$decrement(3)}}'
+        }
       }
     ]
   }]
@@ -41,5 +51,20 @@ test('Engine interface', function (t) {
   const scenario = engine.createScenario(script.scenarios[0], events);
   t.assert(engine, 'Can construct an engine');
   t.assert(typeof scenario === 'function', 'Can create a scenario');
+  t.end();
+});
+
+test('Lambda engine template functions', function(t) {
+  const events = new EventEmitter();
+  const engine = new LambdaEngine(script, events, {});
+  const context = {
+    vars: {}, 
+    funcs: {
+      $increment: engine.$increment,
+      $decrement: engine.$decrement
+    }
+  };
+  t.equal(engine.helpers.template('{{$increment(3)}}', context), '4', 'Can call $increment');
+  t.equal(engine.helpers.template('{{$decrement(3)}}', context), '2', 'Can call $decrement');
   t.end();
 });
