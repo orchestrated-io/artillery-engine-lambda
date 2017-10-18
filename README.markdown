@@ -37,6 +37,8 @@ The Lambda payload can include variable and function placeholders in the form of
 
 For example the payload might include a call to the built-in Artillery functions `$randomNumber(min max)` or `$randomString(length)`.
 
+Use `$contextUid()` to get the scenario unique ID in your payload.
+
 #### Example Script
 
 ```yaml
