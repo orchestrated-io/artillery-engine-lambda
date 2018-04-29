@@ -54,11 +54,11 @@ test('Engine interface', function (t) {
   t.end();
 });
 
-test('Lambda engine template functions', function(t) {
+test('Lambda engine template functions', function (t) {
   const events = new EventEmitter();
   const engine = new LambdaEngine(script, events, {});
   const context = {
-    vars: {}, 
+    vars: {},
     funcs: {
       $increment: engine.$increment,
       $decrement: engine.$decrement

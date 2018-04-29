@@ -72,9 +72,9 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
     return function invoke (context, callback) {
       context.funcs.$increment = self.$increment;
       context.funcs.$decrement = self.$decrement;
-			context.funcs.$contextUid = function () {
-			 return context._uid;
-			};
+      context.funcs.$contextUid = function () {
+        return context._uid;
+      };
 
       const payload = typeof rs.invoke.payload === 'object'
             ? JSON.stringify(rs.invoke.payload)
@@ -144,12 +144,14 @@ LambdaEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
   };
 };
 
-LambdaEngine.prototype.$increment = function $increment(value) {
-  return Number.isInteger(value) ? value += 1 : NaN;
-}
+LambdaEngine.prototype.$increment = function $increment (value) {
+  let result = Number.isInteger(value) ? value += 1 : NaN;
+  return result;
+};
 
-LambdaEngine.prototype.$decrement = function $decrement(value) {
-  return Number.isInteger(value) ? value -= 1 : NaN;
-}
+LambdaEngine.prototype.$decrement = function $decrement (value) {
+  let result = Number.isInteger(value) ? value -= 1 : NaN;
+  return result;
+};
 
 module.exports = LambdaEngine;

@@ -32,7 +32,7 @@
     "tape": "^4.6.3"
   },
   "dependencies": {
-    "artillery-core": "^4.6.0",
+    "artillery-core": "^4.8.1",
     "async": "^1.5.2",
     "aws-sdk": "^2.45.0",
     "debug": "^2.6.6",
