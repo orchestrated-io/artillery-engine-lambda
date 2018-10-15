@@ -19,7 +19,6 @@
   "author": "Orchestrated Systems",
   "license": "MPL-2.0",
   "devDependencies": {
-    "conventional-changelog-lint": "^1.1.9",
     "debug": "^2.6.4",
     "eslint": "^3.19.0",
     "eslint-config-standard": "^10.2.1",
@@ -32,7 +31,7 @@
     "tape": "^4.9.1"
   },
   "dependencies": {
-    "artillery": "^1.6.0-22",
+    "artillery": "^1.6.0-24",
     "async": "^1.5.2",
     "aws-sdk": "^2.280.1",
     "debug": "^2.6.6",
