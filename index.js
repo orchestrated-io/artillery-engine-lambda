@@ -8,7 +8,7 @@ const Lambda = require('aws-sdk/clients/lambda');
 const debug = require('debug')('engine:lambda');
 const A = require('async');
 const _ = require('lodash');
-const helpers = require('artillery-core/lib/engine_util');
+const helpers = require('artillery/core/lib/engine_util');
 
 function LambdaEngine (script, ee) {
   this.script = script;
@@ -77,8 +77,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
       };
 
       const payload = typeof rs.invoke.payload === 'object'
-            ? JSON.stringify(rs.invoke.payload)
-            : String(rs.invoke.payload);
+        ? JSON.stringify(rs.invoke.payload)
+        : String(rs.invoke.payload);
 
       var params = {
         ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
