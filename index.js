@@ -77,8 +77,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
       };
 
       const payload = typeof rs.invoke.payload === 'object'
-            ? JSON.stringify(rs.invoke.payload)
-            : String(rs.invoke.payload);
+        ? JSON.stringify(rs.invoke.payload)
+        : String(rs.invoke.payload);
 
       var params = {
         ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
