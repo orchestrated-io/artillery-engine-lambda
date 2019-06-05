@@ -30,7 +30,7 @@
     "tape": "^4.9.1"
   },
   "dependencies": {
-    "artillery": "^1.6.0-24",
+    "artillery": "^1.6.0-28",
     "async": "^1.5.2",
     "aws-sdk": "^2.280.1",
     "debug": "^2.6.6",

@@ -8,7 +8,7 @@ const Lambda = require('aws-sdk/clients/lambda');
 const debug = require('debug')('engine:lambda');
 const A = require('async');
 const _ = require('lodash');
-const helpers = require('artillery-core/lib/engine_util');
+const helpers = require('artillery/core/lib/engine_util');
 
 function LambdaEngine (script, ee) {
   this.script = script;
