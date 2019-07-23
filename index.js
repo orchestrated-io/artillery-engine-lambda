@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-const Lambda = require('aws-sdk/clients/lambda');
+const aws = require('aws-sdk');
 const debug = require('debug')('engine:lambda');
 const A = require('async');
 const _ = require('lodash');
@@ -16,11 +16,16 @@ function LambdaEngine (script, ee) {
   this.helpers = helpers;
   this.config = script.config;
 
+  this.config.processor = this.config.processor || {};
+
   return this;
 }
 
 LambdaEngine.prototype.createScenario = function createScenario (scenarioSpec, ee) {
-  const tasks = scenarioSpec.flow.map(rs => this.step(rs, ee));
+  const tasks = scenarioSpec.flow.map(rs => this.step(rs, ee,  {
+    beforeRequest: scenarioSpec.beforeRequest,
+    afterResponse: scenarioSpec.afterResponse,
+  }));
 
   return this.compile(tasks, scenarioSpec.flow, ee);
 };
@@ -70,6 +75,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
 
   if (rs.invoke) {
     return function invoke (context, callback) {
+
       context.funcs.$increment = self.$increment;
       context.funcs.$decrement = self.$decrement;
       context.funcs.$contextUid = function () {
@@ -80,6 +86,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         ? JSON.stringify(rs.invoke.payload)
         : String(rs.invoke.payload);
 
+      // see documentation for a description of these fields
+      // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
       var params = {
         ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
         FunctionName: rs.invoke.target || self.script.config.target,
@@ -89,22 +97,84 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         Qualifier: rs.invoke.qualifier || '$LATEST'
       };
 
-      ee.emit('request');
-      const startedAt = process.hrtime();
-      context.lambda.invoke(params, function (err, data) {
-        if (err) {
-          debug(err);
-          ee.emit('error', err);
-          return callback(err, context);
-        }
+      // opts.beforeRequest = scenario-level beforeRequest hook
+      let functionNames = _.concat(opts.beforeRequest || [], rs.invoke.beforeRequest || []);
 
-        let code = data.StatusCode || 0;
-        const endedAt = process.hrtime(startedAt);
-        let delta = (endedAt[0] * 1e9) + endedAt[1];
-        ee.emit('response', delta, code, context._uid);
-        debug(data);
-        return callback(null, context);
-      });
+      A.eachSeries(
+        functionNames,
+        function iteratee(functionName, next) {
+          let fn = helpers.template(functionName, context);
+          let processFunc = self.config.processor[fn];
+          if (!processFunc) {
+            processFunc = function(r, c, e, cb) { return cb(null); };
+            console.log(`WARNING: custom function ${fn} could not be found`);
+          }
+          processFunc(params, context, ee, function(err) {
+            if (err) {
+              return next(err);
+            }
+            return next(null);
+          });
+        },
+        function done(err) {
+
+          if (err) {
+            debug(err);
+            return callback(err, context);
+          }
+
+          ee.emit('request');
+          const startedAt = process.hrtime();
+         
+          context.lambda.invoke(params, function (err, data) {
+
+            if (err) {
+              debug(err);
+              ee.emit('error', err);
+              return callback(err, context);
+            }
+
+            let code = data.StatusCode || 0;
+            const endedAt = process.hrtime(startedAt);
+            let delta = (endedAt[0] * 1e9) + endedAt[1];
+            ee.emit('response', delta, code, context._uid);
+            debug(data);
+
+            let functionNames = _.concat(opts.afterResponse || [], rs.invoke.afterResponse || []);
+
+            A.eachSeries(
+              functionNames,
+              function iteratee(functionName, next) {
+                let fn = helpers.template(functionName, context);
+                let processFunc = self.config.processor[fn];
+                if (!processFunc) {
+                  processFunc = function(r, c, e, cb) { return cb(null); };
+                  console.log(`WARNING: custom function ${fn} could not be found`);
+      
+                }
+                processFunc(params, data, context, ee, function(err) {
+                  if (err) {
+                    return next(err);
+                  }
+                  return next(null);
+                });
+              },
+              function done(err) {
+                if (err) {
+                  debug(err);
+                  return callback(err, context);
+                }
+
+                return callback(null, context);
+              }
+            );
+            
+          });
+         
+        }
+      );
+
+
     };
   }
 
@@ -125,7 +195,7 @@ LambdaEngine.prototype.compile = function compile (tasks, scenarioSpec, ee) {
         opts.endpoint = self.script.config.lambda.function;
       }
 
-      initialContext.lambda = new Lambda(opts);
+      initialContext.lambda = new aws.Lambda(opts);
       ee.emit('started');
       return next(null, initialContext);
     };
