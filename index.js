@@ -22,6 +22,25 @@ function LambdaEngine (script, ee) {
 }
 
 LambdaEngine.prototype.createScenario = function createScenario (scenarioSpec, ee) {
+
+  // as for http engine we add before and after scenario hook
+  // as formal functions in scenario's steps
+  const beforeScenarioFns = _.map(
+    scenarioSpec.beforeScenario,
+    function(hookFunctionName) {
+      return {'function': hookFunctionName};
+    });
+  const afterScenarioFns = _.map(
+    scenarioSpec.afterScenario,
+    function(hookFunctionName) {
+      return {'function': hookFunctionName};
+    });
+
+  const newFlow = beforeScenarioFns.concat(
+    scenarioSpec.flow.concat(afterScenarioFns));
+
+  scenarioSpec.flow = newFlow;
+
   const tasks = scenarioSpec.flow.map(rs => this.step(rs, ee,  {
     beforeRequest: scenarioSpec.beforeRequest,
     afterResponse: scenarioSpec.afterResponse,
@@ -142,30 +161,78 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
 
             let functionNames = _.concat(opts.afterResponse || [], rs.invoke.afterResponse || []);
 
-            A.eachSeries(
-              functionNames,
-              function iteratee(functionName, next) {
-                let fn = helpers.template(functionName, context);
-                let processFunc = self.config.processor[fn];
-                if (!processFunc) {
-                  processFunc = function(r, c, e, cb) { return cb(null); };
-                  console.log(`WARNING: custom function ${fn} could not be found`);
-      
-                }
-                processFunc(params, data, context, ee, function(err) {
-                  if (err) {
-                    return next(err);
-                  }
-                  return next(null);
-                });
+            function tryToParse(data) {
+              const result = {};
+              try {
+                result.body = JSON.parse(data);
+                result.contentType = 'application/json';
+              } catch (e) {
+                result.body = data;
+                result.contentType = '';
+              }
+              return result;
+            }
+
+            const payload = tryToParse(data.Payload);
+
+            // we build a fake http response
+            // it is needed to make the lib work with other plugins
+            // such as https://github.com/artilleryio/artillery-plugin-expect
+            const response = {
+              body: payload.body,
+              statusCode: data.StatusCode,
+              headers: {
+                'content-type':  payload.contentType
               },
-              function done(err) {
-                if (err) {
-                  debug(err);
-                  return callback(err, context);
+            };
+
+            const request = _.assign({
+              url: context.lambda.endpoint.href
+            }, rs.invoke);
+
+            helpers.captureOrMatch(
+              request,
+              response,
+              context,
+              function captured(err, result) {
+                // TODO handle matches
+                let haveFailedCaptures = _.some(result.captures, function(v, k) {
+                  return v === '';
+                });
+                
+                if (!haveFailedCaptures) {
+                  _.each(result.captures, function(v, k) {
+                    _.set(context.vars, k, v);
+                  });
                 }
 
-                return callback(null, context);
+                A.eachSeries(
+                  functionNames,
+                  function iteratee(functionName, next) {
+                    let fn = helpers.template(functionName, context);
+                    let processFunc = self.config.processor[fn];
+                    if (!processFunc) {
+                      processFunc = function(r, c, e, cb) { return cb(null); };
+                      console.log(`WARNING: custom function ${fn} could not be found`);
+          
+                    }
+                    processFunc(request, response, context, ee, function(err) {
+                      if (err) {
+                        return next(err);
+                      }
+                      return next(null);
+                    });
+                  },
+                  function done(err) {
+                    if (err) {
+                      debug(err);
+                      return callback(err, context);
+                    }
+    
+                    return callback(null, context);
+                  }
+                );
+  
               }
             );
             
