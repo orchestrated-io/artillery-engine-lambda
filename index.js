@@ -10,6 +10,8 @@ const A = require('async');
 const _ = require('lodash');
 const helpers = require('artillery/core/lib/engine_util');
 
+const utils = require('./utils');
+
 function LambdaEngine (script, ee) {
   this.script = script;
   this.ee = ee;
@@ -24,7 +26,7 @@ function LambdaEngine (script, ee) {
 LambdaEngine.prototype.createScenario = function createScenario (scenarioSpec, ee) {
 
   // as for http engine we add before and after scenario hook
-  // as formal functions in scenario's steps
+  // as normal functions in scenario's steps
   const beforeScenarioFns = _.map(
     scenarioSpec.beforeScenario,
     function(hookFunctionName) {
@@ -107,7 +109,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
 
       // see documentation for a description of these fields
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
-      var params = {
+      var awsParams = {
         ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
         FunctionName: rs.invoke.target || self.script.config.target,
         InvocationType: rs.invoke.invocationType || 'Event',
@@ -116,27 +118,24 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         Qualifier: rs.invoke.qualifier || '$LATEST'
       };
 
-      // opts.beforeRequest = scenario-level beforeRequest hook
-      let functionNames = _.concat(opts.beforeRequest || [], rs.invoke.beforeRequest || []);
+      // build object to pass to hooks
+      // we do not pass only aws params but also additional information
+      // we need to make the engine work with other plugins
+      const params = _.assign({
+        url: context.lambda.endpoint.href,
+        awsParams: awsParams,
+      }, rs.invoke);
 
-      A.eachSeries(
-        functionNames,
-        function iteratee(functionName, next) {
-          let fn = helpers.template(functionName, context);
-          let processFunc = self.config.processor[fn];
-          if (!processFunc) {
-            processFunc = function(r, c, e, cb) { return cb(null); };
-            console.log(`WARNING: custom function ${fn} could not be found`);
-          }
-          processFunc(params, context, ee, function(err) {
-            if (err) {
-              return next(err);
-            }
-            return next(null);
-          });
-        },
+
+      const beforeRequestFunctionNames = _.concat(opts.beforeRequest || [], rs.invoke.beforeRequest || []);
+
+      utils.processBeforeRequestFunctions(
+        self.script,
+        beforeRequestFunctionNames,
+        params,
+        context,
+        ee,
         function done(err) {
-
           if (err) {
             debug(err);
             return callback(err, context);
@@ -144,8 +143,9 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
 
           ee.emit('request');
           const startedAt = process.hrtime();
-         
-          context.lambda.invoke(params, function (err, data) {
+
+          // invoke lambda function
+          context.lambda.invoke(awsParams, function (err, data) {
 
             if (err) {
               debug(err);
@@ -159,21 +159,9 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
             ee.emit('response', delta, code, context._uid);
             debug(data);
 
-            let functionNames = _.concat(opts.afterResponse || [], rs.invoke.afterResponse || []);
-
-            function tryToParse(data) {
-              const result = {};
-              try {
-                result.body = JSON.parse(data);
-                result.contentType = 'application/json';
-              } catch (e) {
-                result.body = data;
-                result.contentType = '';
-              }
-              return result;
-            }
-
-            const payload = tryToParse(data.Payload);
+            // AWS output is a generic string
+            // we need to guess its content type
+            const payload = utils.tryToParse(data.Payload);
 
             // we build a fake http response
             // it is needed to make the lib work with other plugins
@@ -186,12 +174,8 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
               },
             };
 
-            const request = _.assign({
-              url: context.lambda.endpoint.href
-            }, rs.invoke);
-
             helpers.captureOrMatch(
-              request,
+              params,
               response,
               context,
               function captured(err, result) {
@@ -206,23 +190,15 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                   });
                 }
 
-                A.eachSeries(
-                  functionNames,
-                  function iteratee(functionName, next) {
-                    let fn = helpers.template(functionName, context);
-                    let processFunc = self.config.processor[fn];
-                    if (!processFunc) {
-                      processFunc = function(r, c, e, cb) { return cb(null); };
-                      console.log(`WARNING: custom function ${fn} could not be found`);
-          
-                    }
-                    processFunc(request, response, context, ee, function(err) {
-                      if (err) {
-                        return next(err);
-                      }
-                      return next(null);
-                    });
-                  },
+                const afterResponseFunctionNames = _.concat(opts.afterResponse || [], rs.invoke.afterResponse || []);
+
+                utils.processAfterResponseFunctions(
+                  self.script,
+                  afterResponseFunctionNames,
+                  params,
+                  response,
+                  context,
+                  ee,
                   function done(err) {
                     if (err) {
                       debug(err);
@@ -232,16 +208,12 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                     return callback(null, context);
                   }
                 );
-  
               }
             );
             
           });
-         
         }
-      );
-
-
+      )
     };
   }
 
