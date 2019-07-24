@@ -144,6 +144,11 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
           ee.emit('request');
           const startedAt = process.hrtime();
 
+          // after running "before request" functions
+          // the context could have changed
+          // we need to rerun template on payload
+          awsParams.Payload = helpers.template(payload, context);
+
           // invoke lambda function
           context.lambda.invoke(awsParams, function (err, data) {
 
