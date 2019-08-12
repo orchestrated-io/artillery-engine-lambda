@@ -17,8 +17,10 @@
   "author": "Orchestrated Systems",
   "license": "MPL-2.0",
   "devDependencies": {
+    "aws-sdk-mock": "^4.5.0",
     "debug": "^2.6.4",
     "husky": "^0.13.3",
+    "sinon": "^7.3.2",
     "tape": "^4.9.1"
   },
   "dependencies": {
