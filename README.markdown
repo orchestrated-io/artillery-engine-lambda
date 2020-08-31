@@ -47,8 +47,8 @@ config:
   lambda:
     region: "us-east-1"
   phases:
-    arrivalCount: 10
-    duration: 1
+    - arrivalCount: 10
+      duration: 1
   engines:
     lambda: {}
 
