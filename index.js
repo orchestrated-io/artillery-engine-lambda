@@ -108,7 +108,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
       // see documentation for a description of these fields
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
       var awsParams = {
-        // ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
+        ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
         FunctionName: rs.invoke.target || self.script.config.target,
         InvocationType: rs.invoke.invocationType || 'Event',
         LogType: rs.invoke.logType || 'Tail',
