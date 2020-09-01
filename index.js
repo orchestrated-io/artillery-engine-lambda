@@ -115,7 +115,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         Payload: helpers.template(payload, context),
         Qualifier: rs.invoke.qualifier || '$LATEST'
       };
-    debug(awsParams);
       // build object to pass to hooks
       // we do not pass only aws params but also additional information
       // we need to make the engine work with other plugins
@@ -159,8 +158,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
             const endedAt = process.hrtime(startedAt);
             let delta = (endedAt[0] * 1e9) + endedAt[1];
             ee.emit('response', delta, code, context._uid);
-            debug ("======");
-            debug(data);
 
             // AWS output is a generic string
             // we need to guess its content type
@@ -176,18 +173,17 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                 'content-type':  payload.contentType
               },
             };
-            debug(context);
             helpers.captureOrMatch(
               params,
               response,
               context,
               function captured(err, result) {
-                if(result && result.captures) { 
+                if(result && result.captures) {
                     // TODO handle matches
                     let haveFailedCaptures = _.some(result.captures, function(v, k) {
                       return v === '';
                     });
-                    
+
                     if (!haveFailedCaptures) {
                       _.each(result.captures, function(v, k) {
                         _.set(context.vars, k, v);
@@ -209,13 +205,13 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                       debug(err);
                       return callback(err, context);
                     }
-    
+
                     return callback(null, context);
                   }
                 );
               }
             );
-            
+
           });
         }
       )
