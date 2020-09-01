@@ -102,22 +102,20 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
       context.funcs.$contextUid = function () {
         return context._uid;
       };
-
       const payload = typeof rs.invoke.payload === 'object'
         ? JSON.stringify(rs.invoke.payload)
         : String(rs.invoke.payload);
-
       // see documentation for a description of these fields
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
       var awsParams = {
-        ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
+        // ClientContext: Buffer.from(rs.invoke.clientContext || '{}').toString('base64'),
         FunctionName: rs.invoke.target || self.script.config.target,
         InvocationType: rs.invoke.invocationType || 'Event',
         LogType: rs.invoke.logType || 'Tail',
         Payload: helpers.template(payload, context),
         Qualifier: rs.invoke.qualifier || '$LATEST'
       };
-
+    debug(awsParams);
       // build object to pass to hooks
       // we do not pass only aws params but also additional information
       // we need to make the engine work with other plugins
@@ -125,7 +123,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         url: context.lambda.endpoint.href,
         awsParams: awsParams,
       }, rs.invoke);
-
 
       const beforeRequestFunctionNames = _.concat(opts.beforeRequest || [], rs.invoke.beforeRequest || []);
 
@@ -162,6 +159,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
             const endedAt = process.hrtime(startedAt);
             let delta = (endedAt[0] * 1e9) + endedAt[1];
             ee.emit('response', delta, code, context._uid);
+            debug ("======");
             debug(data);
 
             // AWS output is a generic string
@@ -178,21 +176,23 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                 'content-type':  payload.contentType
               },
             };
-
+            debug(context);
             helpers.captureOrMatch(
               params,
               response,
               context,
               function captured(err, result) {
-                // TODO handle matches
-                let haveFailedCaptures = _.some(result.captures, function(v, k) {
-                  return v === '';
-                });
-                
-                if (!haveFailedCaptures) {
-                  _.each(result.captures, function(v, k) {
-                    _.set(context.vars, k, v);
-                  });
+                if(result && result.captures) { 
+                    // TODO handle matches
+                    let haveFailedCaptures = _.some(result.captures, function(v, k) {
+                      return v === '';
+                    });
+                    
+                    if (!haveFailedCaptures) {
+                      _.each(result.captures, function(v, k) {
+                        _.set(context.vars, k, v);
+                      });
+                    }
                 }
 
                 const afterResponseFunctionNames = _.concat(opts.afterResponse || [], rs.invoke.afterResponse || []);
