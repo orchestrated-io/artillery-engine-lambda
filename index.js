@@ -178,7 +178,7 @@ LambdaEngine.prototype.step = function step(rs, ee, opts) {
             // we need to guess its content type
             const payload = utils.tryToParse(data.Payload);
             let response;
-            if (awsParams.InvocationType === "RequestRsponse") {
+            if (awsParams.InvocationType === "RequestResponse") {
               // we build a fake http response
               // it is needed to make the lib work with other plugins
               // such as https://github.com/artilleryio/artillery-plugin-expect
