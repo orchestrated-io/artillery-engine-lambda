@@ -202,17 +202,18 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
               response,
               context,
               function captured(err, result) {
-                // TODO handle matches
-                let haveFailedCaptures = _.some(result.captures, function(v, k) {
-                  return v === '';
-                });
-                
-                if (!haveFailedCaptures) {
-                  _.each(result.captures, function(v, k) {
-                    _.set(context.vars, k, v);
-                  });
+                if( result && results.captures) {
+                    // TODO handle matches
+                    let haveFailedCaptures = _.some(result.captures, function(v, k) {
+                      return v === '';
+                    });
+                    
+                    if (!haveFailedCaptures) {
+                      _.each(result.captures, function(v, k) {
+                        _.set(context.vars, k, v);
+                      });
+                    }
                 }
-              }
 
                 const afterResponseFunctionNames = _.concat(opts.afterResponse || [], rs.invoke.afterResponse || []);
 
