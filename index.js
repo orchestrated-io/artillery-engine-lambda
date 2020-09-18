@@ -198,7 +198,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
               response,
               context,
               function captured(err, result) {
-                if( result && results.captures) {
+                if( result && result.captures) {
                     // TODO handle matches
                     let haveFailedCaptures = _.some(result.captures, function(v, k) {
                       return v === '';
