@@ -115,7 +115,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         Payload: helpers.template(payload, context),
         Qualifier: rs.invoke.qualifier || '$LATEST'
       };
-
       // build object to pass to hooks
       // we do not pass only aws params but also additional information
       // we need to make the engine work with other plugins
