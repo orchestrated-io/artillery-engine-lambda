@@ -207,7 +207,7 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                     let haveFailedCaptures = _.some(result.captures, function(v, k) {
                       return v === '';
                     });
-                    
+
                     if (!haveFailedCaptures) {
                       _.each(result.captures, function(v, k) {
                         _.set(context.vars, k, v);
@@ -229,13 +229,13 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                       debug(err);
                       return callback(err, context);
                     }
-    
+
                     return callback(null, context);
                   }
                 );
               }
             );
-            
+
           });
         }
       )
