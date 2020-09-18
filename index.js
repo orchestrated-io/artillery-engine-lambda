@@ -102,11 +102,9 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
       context.funcs.$contextUid = function () {
         return context._uid;
       };
-
       const payload = typeof rs.invoke.payload === 'object'
         ? JSON.stringify(rs.invoke.payload)
         : String(rs.invoke.payload);
-
       // see documentation for a description of these fields
       // https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/Lambda.html#invoke-property
       var awsParams = {
@@ -125,7 +123,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
         url: context.lambda.endpoint.href,
         awsParams: awsParams,
       }, rs.invoke);
-
 
       const beforeRequestFunctionNames = _.concat(opts.beforeRequest || [], rs.invoke.beforeRequest || []);
 
@@ -235,7 +232,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                 );
               }
             );
-
           });
         }
       )
