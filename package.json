@@ -17,17 +17,17 @@
   "author": "Orchestrated Systems",
   "license": "MPL-2.0",
   "devDependencies": {
-    "aws-sdk-mock": "^4.5.0",
-    "debug": "^2.6.4",
-    "husky": "^0.13.3",
-    "sinon": "^7.3.2",
-    "tape": "^4.9.1"
+    "aws-sdk-mock": "^5.1.0",
+    "debug": "^4.3.1",
+    "husky": "^4.3.6",
+    "sinon": "^9.2.2",
+    "tape": "^5.0.1"
   },
   "dependencies": {
-    "artillery": "^1.6.0-29",
-    "async": "^1.5.2",
-    "aws-sdk": "^2.280.1",
+    "artillery": "^1.6.1",
+    "async": "^3.2.0",
+    "aws-sdk": "^2.815.0",
     "debug": "^2.6.6",
-    "lodash": "^4.17.13"
+    "lodash": "^4.17.20"
   }
 }
