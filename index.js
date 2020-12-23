@@ -152,33 +152,53 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
               debug(err);
               ee.emit('error', err);
               return callback(err, context);
+            } else if (data.FunctionError) {
+              ee.emit("error", data.FunctionError);
+              return callback(data.FunctionError, context);
             }
-
-            let code = data.StatusCode || 0;
-            const endedAt = process.hrtime(startedAt);
-            let delta = (endedAt[0] * 1e9) + endedAt[1];
-            ee.emit('response', delta, code, context._uid);
 
             // AWS output is a generic string
             // we need to guess its content type
             const payload = utils.tryToParse(data.Payload);
+            let response;
+            if (awsParams.InvocationType === "RequestResponse") {
+              // we build a fake http response
+              // it is needed to make the lib work with other plugins
+              // such as https://github.com/artilleryio/artillery-plugin-expect
+              response = {
+                body: payload.body.body,
+                statusCode: payload.body.statusCode,
+                headers: {
+                  "content-type": payload.contentType
+                }
+              };
+              if (response.statusCode != 200) {
+                ee.emit("error", response.statusCode);
+                return callback(response.statusCode, context);
+              }
+            } else {
+              response = {
+                body: payload.body,
+                statusCode: data.StatusCode,
+                body: payload.body.body,
+                statusCode: payload.body.statusCode,
+                headers: {
+                  "content-type": payload.contentType
+                }
+              };
+            }
 
-            // we build a fake http response
-            // it is needed to make the lib work with other plugins
-            // such as https://github.com/artilleryio/artillery-plugin-expect
-            const response = {
-              body: payload.body,
-              statusCode: data.StatusCode,
-              headers: {
-                'content-type':  payload.contentType
-              },
-            };
+            let code = data.StatusCode || 0;
+            const endedAt = process.hrtime(startedAt);
+            let delta = endedAt[0] * 1e9 + endedAt[1];
+            ee.emit("response", delta, code, context._uid);
+
             helpers.captureOrMatch(
               params,
               response,
               context,
               function captured(err, result) {
-                if(result && result.captures) {
+                if( result && result.captures) {
                     // TODO handle matches
                     let haveFailedCaptures = _.some(result.captures, function(v, k) {
                       return v === '';
@@ -211,7 +231,6 @@ LambdaEngine.prototype.step = function step (rs, ee, opts) {
                 );
               }
             );
-
           });
         }
       )
